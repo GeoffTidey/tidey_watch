@@ -38,13 +38,13 @@ static void do_init(void) {
   Layer *root_layer = window_get_root_layer(s_data.window);
   GRect frame = layer_get_frame(root_layer);
 
-  s_data.time_label = text_layer_create(GRect(0, 20, frame.size.w, frame.size.h - 40));
+  s_data.time_label = text_layer_create(GRect(0, 0, frame.size.w, frame.size.h - 30));
   text_layer_set_background_color(s_data.time_label, GColorBlack);
   text_layer_set_text_color(s_data.time_label, GColorWhite);
   text_layer_set_font(s_data.time_label, time_font);
   layer_add_child(root_layer, text_layer_get_layer(s_data.time_label));
 
-  s_data.date_label = text_layer_create(GRect(0, frame.size.h - 40, frame.size.w, 40));
+  s_data.date_label = text_layer_create(GRect(0, frame.size.h - 30, frame.size.w, 30));
   text_layer_set_background_color(s_data.date_label, GColorBlack);
   text_layer_set_text_color(s_data.date_label, GColorWhite);
   text_layer_set_font(s_data.date_label, date_font);
