@@ -1,0 +1,22 @@
+{
+  "uuid": "28c5d625-de32-42d1-bb4a-7d08edd471dc",
+  "shortName": "Tidey Watch",
+  "longName": "Tidey Watch",
+  "companyName": "Geoff Tidey",
+  "versionCode": 1,
+  "versionLabel": "1.0.0",
+  "watchapp": {
+    "watchface": true
+  },
+  "appKeys": {},
+  "resources": {
+    "media": [
+      {
+        "menuIcon": true,
+        "type": "png",
+        "name": "IMAGE_MENU_ICON",
+        "file": "images/menu_icon_tidey_watch.png"
+      }
+    ]
+  }
+}
