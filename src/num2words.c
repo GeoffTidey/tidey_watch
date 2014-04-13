@@ -48,6 +48,15 @@ static const char* STR_TO = "to";
 static const char* STR_PAST = "past";
 static const char* STR_HALF = "half";
 static const char* STR_AFTER = "after";
+static const char* STR_JUST_GONE = "just gone";
+static const char* STR_NEARLY = "nearly";
+
+static const enum ALMOST
+{
+    spot_on,
+    just_gone,
+    nearly
+} almost;
 
 static size_t append_number(char* words, int num) {
   int tens_val = num / 10 % 10;
@@ -86,6 +95,14 @@ void fuzzy_time_to_words(int hours, int minutes, char* words, size_t length) {
   int fuzzy_hours = hours;
   int fuzzy_minutes = ((minutes + 2) / 5) * 5;
 
+  enum ALMOST there = spot_on;
+
+  if (minutes > fuzzy_minutes) {
+    there = just_gone;
+  } else if (minutes < fuzzy_minutes) {
+    there = nearly;
+  }
+
   // Handle hour & minute roll-over.
   if (fuzzy_minutes > 55) {
     fuzzy_minutes = 0;
@@ -97,6 +114,15 @@ void fuzzy_time_to_words(int hours, int minutes, char* words, size_t length) {
 
   size_t remaining = length;
   memset(words, 0, length);
+
+  if (there == just_gone) {
+    remaining -= append_string(words, remaining, STR_JUST_GONE);
+  } else if (there == nearly) {
+    remaining -= append_string(words, remaining, STR_NEARLY);
+  }
+  if (there == just_gone || there == nearly) {
+    remaining -= append_string(words, remaining, " ");
+  }
 
   if (fuzzy_minutes != 0 && (fuzzy_minutes >= 10 || fuzzy_minutes == 5 || fuzzy_hours == 0 || fuzzy_hours == 12)) {
     if (fuzzy_minutes == 15) {
