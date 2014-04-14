@@ -7,18 +7,18 @@ static struct CommonWordsData {
   Window *window;
   TextLayer *time_label;
   TextLayer *date_label;
-  char buffer[BUFFER_SIZE];
+  char time_buffer[BUFFER_SIZE];
+  char date_buffer[BUFFER_SIZE];
 } s_data;
 
 static void update_time(struct tm* t) {
-  fuzzy_time_to_words(t->tm_hour, t->tm_min, s_data.buffer, BUFFER_SIZE);
-  text_layer_set_text(s_data.time_label, s_data.buffer);
+  fuzzy_time_to_words(t->tm_hour, t->tm_min, s_data.time_buffer, BUFFER_SIZE);
+  text_layer_set_text(s_data.time_label, s_data.time_buffer);
 }
 
 static void update_date(struct tm* t) {
-  char buffer[BUFFER_SIZE];
-  strftime(buffer, BUFFER_SIZE, "%a %e %b", t);
-  text_layer_set_text(s_data.date_label, buffer);
+  strftime(s_data.date_buffer, BUFFER_SIZE, "%R %a %e %b", t);
+  text_layer_set_text(s_data.date_label, s_data.date_buffer);
 }
 
 static void handle_minute_tick(struct tm *tick_time, TimeUnits units_changed) {
@@ -44,7 +44,7 @@ static void do_init(void) {
   text_layer_set_font(s_data.time_label, time_font);
   layer_add_child(root_layer, text_layer_get_layer(s_data.time_label));
 
-  s_data.date_label = text_layer_create(GRect(0, frame.size.h - 30, frame.size.w, 30));
+  s_data.date_label = text_layer_create(GRect(12, frame.size.h - 30, frame.size.w, 30));
   text_layer_set_background_color(s_data.date_label, GColorBlack);
   text_layer_set_text_color(s_data.date_label, GColorWhite);
   text_layer_set_font(s_data.date_label, date_font);
