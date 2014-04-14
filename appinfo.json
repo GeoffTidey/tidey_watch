@@ -10,6 +10,13 @@
   },
   "appKeys": {},
   "resources": {
-    "media": []
+    "media": [
+        {
+          "type": "png",
+          "name": "TIDEY_WATCH",
+          "file": "images/tidey_watch.png",
+          "menuIcon": true
+        }
+      ]
   }
 }
