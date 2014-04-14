@@ -17,7 +17,9 @@ static void update_time(struct tm* t) {
 }
 
 static void update_date(struct tm* t) {
-  strftime(s_data.date_buffer, BUFFER_SIZE, "%R %a %e %b", t);
+  clock_copy_time_string(s_data.date_buffer, BUFFER_SIZE);
+  int len = strlen(s_data.date_buffer);
+  strftime(&s_data.date_buffer[len], BUFFER_SIZE - len, " %a %e %b", t);
   text_layer_set_text(s_data.date_label, s_data.date_buffer);
 }
 
