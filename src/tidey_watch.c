@@ -52,8 +52,7 @@ static void do_init(void) {
 
   time_t now = time(NULL);
   struct tm *t = localtime(&now);
-  update_time(t);
-  update_date(t);
+  handle_minute_tick(t, 0);
 
   tick_timer_service_subscribe(MINUTE_UNIT, &handle_minute_tick);
 }
