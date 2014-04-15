@@ -47,7 +47,7 @@ static const char* STR_QUARTER = "quarter";
 static const char* STR_TO = "to";
 static const char* STR_PAST = "past";
 static const char* STR_HALF = "half";
-static const char* STR_AFTER = "after";
+static const char* STR_AFTER = "past";
 static const char* STR_JUST_GONE = "just gone";
 static const char* STR_NEARLY = "nearly";
 
