@@ -73,6 +73,7 @@ static TextLayer* init_text_layer(GRect location, GColor colour, GColor backgrou
 
 static void update_time(struct tm* t) {
   fuzzy_time_to_words(t->tm_hour, t->tm_min, s_data.time_buffer, BUFFER_SIZE);
+  // strcpy(s_data.time_buffer, "just gone quarter to midnight");
   text_layer_set_text(s_data.time_label, s_data.time_buffer);
 }
 
