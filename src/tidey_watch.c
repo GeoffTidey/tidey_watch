@@ -17,6 +17,7 @@ enum {
   KEY_TEMPERATURE = 0,
   KEY_LOCATION,
   KEY_WEATHER_DESCRIPTION,
+  KEY_UNIX_TIMESTAMP,
 };
 
 void process_tuple(Tuple *t)
@@ -31,6 +32,9 @@ void process_tuple(Tuple *t)
   char string_value[BUFFER_SIZE];
   strcpy(string_value, t->value->cstring);
 
+  // struct tm *weather_time;
+  // int len;
+
   //Decide what to do
   switch(key) {
     // case KEY_TEMPERATURE:
@@ -40,10 +44,22 @@ void process_tuple(Tuple *t)
     //   break;
     case KEY_WEATHER_DESCRIPTION:
       //Temperature received
+      memset(s_data.weather_buffer, 0, BUFFER_SIZE);
       strcpy(s_data.weather_buffer, string_value);
       text_layer_set_text(s_data.weather_label, (char*) &s_data.weather_buffer);
       break;
- }
+    // case KEY_UNIX_TIMESTAMP:
+    //   memset(s_data.weather_buffer, 0, BUFFER_SIZE);
+    //   APP_LOG(APP_LOG_LEVEL_DEBUG, "...recvd tuple key: %i", value);
+      //sprintf(s_data.weather_buffer, "%d", value);
+      // const time_t * new_time = (const time_t *) value;
+      // localtime(new_time);
+      // len = strlen(s_data.weather_buffer);
+      // strftime(&s_data.weather_buffer[len], BUFFER_SIZE - len, " %R", weather_time);
+      //strftime(s_data.weather_buffer, BUFFER_SIZE, " %R", weather_time);
+
+      // break;
+  }
 }
 
 static void in_received_handler(DictionaryIterator *iter, void *context)
@@ -101,10 +117,10 @@ static void handle_minute_tick(struct tm *tick_time, TimeUnits units_changed) {
   update_time(tick_time);
   update_date(tick_time);
   //Every five minutes
-  if (tick_time->tm_min % 5 == 0) {
+  // if (tick_time->tm_min % 5 == 0) {
     //Send an arbitrary message, the response will be handled by in_received_handler()
     send_int(5, 5);
-  }
+  // }
 }
 
 static void do_init(void) {

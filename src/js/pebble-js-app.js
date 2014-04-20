@@ -41,23 +41,24 @@ var getWeatherData = function(latitude, longitude) {
   var json = JSON.parse(response);
 
   //Extract the data
-  var temperature = Math.round(json.list[1].main.temp - 273.15);
-  var location = json.city.name;
+  var weatherDatetime = parseInt(json.list[1].dt);
+  var temperature     = Math.round(json.list[1].main.temp - 273.15);
+  var weatherDesc     = json.list[1].weather[0].description;
+  var location        = json.city.name;
 
   //Console output to check all is working.
-  console.log("It is " + temperature + " degrees in " + location + " in ~ 3 hours");
+  var date = new Date(weatherDatetime * 1000);
+  console.log("It is " + temperature + " degrees in " + location + " in " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds());
 
   //Construct a key-value dictionary
-  // var dict = { "0": temperature, "1": location, "2": json.list[1].weather.description };
-  // var dict = { 0: temperature, 1: location, 2: json.list[1].weather.description };
-  var dict = { 2: json.list[1].weather[0].description };
+  var dict = { 0: temperature, 1: location, 2: weatherDesc, 3: weatherDatetime };
 
   //Send data to watch for display
   Pebble.sendAppMessage(dict, function(e) {
-        console.log("success");
-        }, function(e) {
-        console.log("fail");
-    });
+    console.log("success");
+    }, function(e) {
+      console.log("fail");
+  });
 };
 
 
