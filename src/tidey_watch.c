@@ -113,8 +113,6 @@ static void do_init(void) {
   window_stack_push(s_data.window, animated);
 
   window_set_background_color(s_data.window, GColorBlack);
-  GFont time_font = fonts_get_system_font(FONT_KEY_BITHAM_30_BLACK);
-  GFont date_font = fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD);
 
   Layer *root_layer = window_get_root_layer(s_data.window);
   GRect frame = layer_get_frame(root_layer);
@@ -122,21 +120,13 @@ static void do_init(void) {
   int top_y = 20;
   int bottom_y = 21;
 
-  s_data.weather_label = init_text_layer(GRect(0, 0, frame.size.w, top_y - 1), GColorWhite, GColorBlack, "RESOURCE_ID_GOTHIC_18", GTextAlignmentLeft);
-  text_layer_set_text(s_data.weather_label, "Temp: N/A");
+  s_data.weather_label = init_text_layer(GRect(0, 0, frame.size.w, top_y - 1), GColorWhite, GColorBlack, "RESOURCE_ID_GOTHIC_18_BOLD", GTextAlignmentCenter);
   layer_add_child(root_layer, text_layer_get_layer(s_data.weather_label));
 
-  s_data.time_label = text_layer_create(GRect(0, top_y, frame.size.w, frame.size.h - bottom_y - top_y));
-  text_layer_set_background_color(s_data.time_label, GColorBlack);
-  text_layer_set_text_color(s_data.time_label, GColorWhite);
-  text_layer_set_font(s_data.time_label, time_font);
+  s_data.time_label = init_text_layer(GRect(0, top_y, frame.size.w, frame.size.h - bottom_y - top_y), GColorWhite, GColorBlack, "RESOURCE_ID_BITHAM_30_BLACK", GTextAlignmentLeft);
   layer_add_child(root_layer, text_layer_get_layer(s_data.time_label));
 
-  int date_x = clock_is_24h_style() ? 12 : 0;
-  s_data.date_label = text_layer_create(GRect(date_x, frame.size.h - bottom_y, frame.size.w, bottom_y));
-  text_layer_set_background_color(s_data.date_label, GColorBlack);
-  text_layer_set_text_color(s_data.date_label, GColorWhite);
-  text_layer_set_font(s_data.date_label, date_font);
+  s_data.date_label = init_text_layer(GRect(0, frame.size.h - bottom_y, frame.size.w, bottom_y), GColorWhite, GColorBlack, "RESOURCE_ID_GOTHIC_18_BOLD", GTextAlignmentCenter);
   layer_add_child(root_layer, text_layer_get_layer(s_data.date_label));
 
   //Register AppMessage events
