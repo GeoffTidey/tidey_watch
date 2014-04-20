@@ -7,15 +7,16 @@ static struct CommonWordsData {
   Window *window;
   TextLayer *time_label;
   TextLayer *date_label;
-  TextLayer *temperature_label;
+  TextLayer *weather_label;
   char time_buffer[BUFFER_SIZE];
   char date_buffer[BUFFER_SIZE];
-  char temperature_buffer[BUFFER_SIZE];
+  char weather_buffer[BUFFER_SIZE];
 } s_data;
 
 enum {
-  KEY_LOCATION = 0,
-  KEY_TEMPERATURE = 1,
+  KEY_TEMPERATURE = 0,
+  KEY_LOCATION,
+  KEY_WEATHER_DESCRIPTION,
 };
 
 void process_tuple(Tuple *t)
@@ -31,30 +32,31 @@ void process_tuple(Tuple *t)
   strcpy(string_value, t->value->cstring);
 
   //Decide what to do
-  // switch(key) {
-  //   case KEY_TEMPERATURE:
+  switch(key) {
+    // case KEY_TEMPERATURE:
+    //   //Temperature received
+    //   snprintf(s_data.weather_buffer, sizeof("Temperature: XX \u00B0C"), "Temperature: %d \u00B0C", value);
+    //   text_layer_set_text(s_data.weather_label, (char*) &s_data.weather_buffer);
+    //   break;
+    case KEY_WEATHER_DESCRIPTION:
       //Temperature received
-      snprintf(s_data.temperature_buffer, sizeof("Temperature: XX \u00B0C"), "Temperature: %d \u00B0C", value);
-      text_layer_set_text(s_data.temperature_label, (char*) &s_data.temperature_buffer);
-  //     break;
-  // }
+      strcpy(s_data.weather_buffer, string_value);
+      text_layer_set_text(s_data.weather_label, (char*) &s_data.weather_buffer);
+      break;
+ }
 }
 
 static void in_received_handler(DictionaryIterator *iter, void *context)
 {
   //Get data
-  Tuple *t =  dict_read_first(iter);
-  if(t)
-  {
+  Tuple *t = dict_read_first(iter);
+  if (t) {
     process_tuple(t);
   }
-
   //Get next
-  while(t != NULL)
-  {
+  while(t != NULL) {
     t = dict_read_next(iter);
-    if(t)
-    {
+    if (t) {
       process_tuple(t);
     }
   }
@@ -99,11 +101,10 @@ static void handle_minute_tick(struct tm *tick_time, TimeUnits units_changed) {
   update_time(tick_time);
   update_date(tick_time);
   //Every five minutes
-  // if(tick_time->tm_min % 5 == 0)
-  // {
+  if (tick_time->tm_min % 5 == 0) {
     //Send an arbitrary message, the response will be handled by in_received_handler()
     send_int(5, 5);
-  // }
+  }
 }
 
 static void do_init(void) {
@@ -121,9 +122,9 @@ static void do_init(void) {
   int top_y = 20;
   int bottom_y = 21;
 
-  s_data.temperature_label = init_text_layer(GRect(0, 0, frame.size.w, top_y - 1), GColorWhite, GColorBlack, "RESOURCE_ID_GOTHIC_18", GTextAlignmentLeft);
-  text_layer_set_text(s_data.temperature_label, "Temp: N/A");
-  layer_add_child(root_layer, text_layer_get_layer(s_data.temperature_label));
+  s_data.weather_label = init_text_layer(GRect(0, 0, frame.size.w, top_y - 1), GColorWhite, GColorBlack, "RESOURCE_ID_GOTHIC_18", GTextAlignmentLeft);
+  text_layer_set_text(s_data.weather_label, "Temp: N/A");
+  layer_add_child(root_layer, text_layer_get_layer(s_data.weather_label));
 
   s_data.time_label = text_layer_create(GRect(0, top_y, frame.size.w, frame.size.h - bottom_y - top_y));
   text_layer_set_background_color(s_data.time_label, GColorBlack);
@@ -138,7 +139,7 @@ static void do_init(void) {
   text_layer_set_font(s_data.date_label, date_font);
   layer_add_child(root_layer, text_layer_get_layer(s_data.date_label));
 
-//Register AppMessage events
+  //Register AppMessage events
   app_message_register_inbox_received(in_received_handler);
   app_message_open(512, 512);   //Large input and output buffer sizes
 
