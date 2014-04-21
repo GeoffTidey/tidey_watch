@@ -32,8 +32,7 @@ void process_tuple(Tuple *t)
   char string_value[BUFFER_SIZE];
   strcpy(string_value, t->value->cstring);
 
-  // struct tm *weather_time;
-  // int len;
+  int len;
 
   //Decide what to do
   switch(key) {
@@ -42,23 +41,40 @@ void process_tuple(Tuple *t)
     //   snprintf(s_data.weather_buffer, sizeof("Temperature: XX \u00B0C"), "Temperature: %d \u00B0C", value);
     //   text_layer_set_text(s_data.weather_label, (char*) &s_data.weather_buffer);
     //   break;
-    case KEY_WEATHER_DESCRIPTION:
-      //Temperature received
-      memset(s_data.weather_buffer, 0, BUFFER_SIZE);
-      strcpy(s_data.weather_buffer, string_value);
-      text_layer_set_text(s_data.weather_label, (char*) &s_data.weather_buffer);
-      break;
-    // case KEY_UNIX_TIMESTAMP:
+    // case KEY_WEATHER_DESCRIPTION:
+    //   //Temperature received
     //   memset(s_data.weather_buffer, 0, BUFFER_SIZE);
-    //   APP_LOG(APP_LOG_LEVEL_DEBUG, "...recvd tuple key: %i", value);
-      //sprintf(s_data.weather_buffer, "%d", value);
-      // const time_t * new_time = (const time_t *) value;
-      // localtime(new_time);
-      // len = strlen(s_data.weather_buffer);
-      // strftime(&s_data.weather_buffer[len], BUFFER_SIZE - len, " %R", weather_time);
-      //strftime(s_data.weather_buffer, BUFFER_SIZE, " %R", weather_time);
+    //   strcpy(s_data.weather_buffer, string_value);
+    //   text_layer_set_text(s_data.weather_label, (char*) &s_data.weather_buffer);
+    //   break;
+    case KEY_UNIX_TIMESTAMP:
+      memset(s_data.weather_buffer, 0, BUFFER_SIZE);
+      if (value) {
+        APP_LOG(APP_LOG_LEVEL_DEBUG, "...recvd tuple key: %i", value);
+        // snprintf(s_data.weather_buffer, BUFFER_SIZE, "key: %i", value);
 
-      // break;
+
+        time_t now = time(NULL);
+        struct tm *t_now = localtime(&now);
+        APP_LOG(APP_LOG_LEVEL_DEBUG, "now local hour: %i", t_now->tm_hour);
+        t_now = gmtime(&now);
+        APP_LOG(APP_LOG_LEVEL_DEBUG, "now UTC hour: %i", t_now->tm_hour);
+
+        const time_t a_moment_in_time = (time_t) 1398114000;
+        struct tm *weather_time = localtime(&a_moment_in_time);
+        APP_LOG(APP_LOG_LEVEL_DEBUG, "a_moment_in_time local hour: %i", weather_time->tm_hour);
+        weather_time = gmtime(&a_moment_in_time);
+        APP_LOG(APP_LOG_LEVEL_DEBUG, "a_moment_in_time UTC hour: %i", weather_time->tm_hour);
+
+        int seconds = (int) difftime(a_moment_in_time, now);
+        snprintf(s_data.weather_buffer, BUFFER_SIZE, "%d secs till ", seconds);
+
+        len = strlen(s_data.weather_buffer);
+        snprintf(&s_data.weather_buffer[len], BUFFER_SIZE - len, "%d", weather_time->tm_hour);
+      }
+      text_layer_set_text(s_data.weather_label, (char*) &s_data.weather_buffer);
+
+      break;
   }
 }
 

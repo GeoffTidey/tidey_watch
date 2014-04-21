@@ -40,18 +40,30 @@ var getWeatherData = function(latitude, longitude) {
   //Convert to JSON
   var json = JSON.parse(response);
 
+  var epochTimeNow = (new Date).getTime() / 1000;
+  var offset = 0;
+  console.log("now: " + epochTimeNow)
+  for (var i = 0; i < json.list.length; i++) {
+    console.log(i + " list: " + json.list[i].dt)
+    if (json.list[i].dt >= epochTimeNow) {
+      offset = i;
+      console.log(i + " greater: " + json.list[i].dt)
+      break;
+    }
+  }
+
   //Extract the data
-  var weatherDatetime = parseInt(json.list[1].dt);
-  var temperature     = Math.round(json.list[1].main.temp - 273.15);
-  var weatherDesc     = json.list[1].weather[0].description;
+  var weatherDatetime = parseInt(json.list[offset].dt);
+  var weatherDate     = new Date(weatherDatetime * 1000);
+  var temperature     = Math.round(json.list[offset].main.temp - 273.15);
+  var weatherDesc     = json.list[offset].weather[0].description;
   var location        = json.city.name;
 
   //Console output to check all is working.
-  var date = new Date(weatherDatetime * 1000);
-  console.log("It is " + temperature + " degrees in " + location + " in " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds());
+  console.log("It is " + temperature + " degrees in " + location + " in " + weatherDate.getHours() + ":" + weatherDate.getMinutes());
 
   //Construct a key-value dictionary
-  var dict = { 0: temperature, 1: location, 2: weatherDesc, 3: weatherDatetime };
+  var dict = { 0: temperature, 1: location, 2: weatherDesc, 3: weatherDate.getHours() };
 
   //Send data to watch for display
   Pebble.sendAppMessage(dict, function(e) {
