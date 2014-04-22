@@ -10,6 +10,9 @@ static struct CommonWordsData {
   TextLayer *weather_label;
   char time_buffer[BUFFER_SIZE];
   char date_buffer[BUFFER_SIZE];
+  char weather_description[BUFFER_SIZE];
+  char weather_temperature[BUFFER_SIZE];
+  char weather_timestamp[BUFFER_SIZE];
   char weather_buffer[BUFFER_SIZE];
 } s_data;
 
@@ -19,6 +22,12 @@ enum {
   KEY_WEATHER_DESCRIPTION,
   KEY_UNIX_TIMESTAMP,
 };
+
+void build_weather_label(void) {
+  memset(s_data.weather_buffer, 0, BUFFER_SIZE);
+  snprintf(s_data.weather_buffer, BUFFER_SIZE, "%s:%s:%s", s_data.weather_temperature, s_data.weather_timestamp, s_data.weather_description);
+  text_layer_set_text(s_data.weather_label, (char*) &s_data.weather_buffer);
+}
 
 void process_tuple(Tuple *t)
 {
@@ -32,34 +41,29 @@ void process_tuple(Tuple *t)
   char string_value[BUFFER_SIZE];
   strcpy(string_value, t->value->cstring);
 
-  int len;
-
   //Decide what to do
   switch(key) {
-    // case KEY_TEMPERATURE:
-    //   //Temperature received
-    //   snprintf(s_data.weather_buffer, sizeof("Temperature: XX \u00B0C"), "Temperature: %d \u00B0C", value);
-    //   text_layer_set_text(s_data.weather_label, (char*) &s_data.weather_buffer);
-    //   break;
-    // case KEY_WEATHER_DESCRIPTION:
-    //   //Temperature received
-    //   memset(s_data.weather_buffer, 0, BUFFER_SIZE);
-    //   strcpy(s_data.weather_buffer, string_value);
-    //   text_layer_set_text(s_data.weather_label, (char*) &s_data.weather_buffer);
-    //   break;
+    case KEY_TEMPERATURE:
+      //Temperature received
+      memset(s_data.weather_temperature, 0, BUFFER_SIZE);
+      snprintf(s_data.weather_temperature, sizeof("XX \u00B0C"), "%d \u00B0C", value);
+      break;
+    case KEY_WEATHER_DESCRIPTION:
+      //Temperature received
+      memset(s_data.weather_description, 0, BUFFER_SIZE);
+      strcpy(s_data.weather_description, string_value);
+      break;
     case KEY_UNIX_TIMESTAMP:
-      memset(s_data.weather_buffer, 0, BUFFER_SIZE);
-      APP_LOG(APP_LOG_LEVEL_DEBUG, "...recvd tuple key: %d", value);
-
+      memset(s_data.weather_timestamp, 0, BUFFER_SIZE);
       int minutes = value / 60;
       if (minutes < 60) {
-        snprintf(s_data.weather_buffer, BUFFER_SIZE, "%c%d min%s", minutes >= 0 ? '+' : '-', minutes, minutes > 1 ? "s" : "");
+        snprintf(s_data.weather_timestamp, BUFFER_SIZE, "%s%d min%s", minutes >= 0 ? "" : "-", minutes, minutes > 1 ? "s" : "");
       } else {
         int hours = minutes / 60;
-        snprintf(s_data.weather_buffer, BUFFER_SIZE, "%c%d hr%s", hours >= 0 ? '+' : '-', hours, hours > 1 ? "s" : "");
+        snprintf(s_data.weather_timestamp, BUFFER_SIZE, "%s%d hr%s", hours >= 0 ? "" : "-", hours, hours > 1 ? "s" : "");
       }
 
-      text_layer_set_text(s_data.weather_label, (char*) &s_data.weather_buffer);
+      build_weather_label();
       break;
   }
 }
@@ -118,11 +122,11 @@ void send_int(uint8_t key, uint8_t cmd)
 static void handle_minute_tick(struct tm *tick_time, TimeUnits units_changed) {
   update_time(tick_time);
   update_date(tick_time);
-  //Every five minutes
-  // if (tick_time->tm_min % 5 == 0) {
+  //Every ten minutes
+  if (tick_time->tm_min % 10 == 0) {
     //Send an arbitrary message, the response will be handled by in_received_handler()
     send_int(5, 5);
-  // }
+  }
 }
 
 static void do_init(void) {
