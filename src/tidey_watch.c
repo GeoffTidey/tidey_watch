@@ -49,31 +49,17 @@ void process_tuple(Tuple *t)
     //   break;
     case KEY_UNIX_TIMESTAMP:
       memset(s_data.weather_buffer, 0, BUFFER_SIZE);
-      if (value) {
-        APP_LOG(APP_LOG_LEVEL_DEBUG, "...recvd tuple key: %i", value);
-        // snprintf(s_data.weather_buffer, BUFFER_SIZE, "key: %i", value);
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "...recvd tuple key: %d", value);
 
-
-        time_t now = time(NULL);
-        struct tm *t_now = localtime(&now);
-        APP_LOG(APP_LOG_LEVEL_DEBUG, "now local hour: %i", t_now->tm_hour);
-        t_now = gmtime(&now);
-        APP_LOG(APP_LOG_LEVEL_DEBUG, "now UTC hour: %i", t_now->tm_hour);
-
-        const time_t a_moment_in_time = (time_t) 1398114000;
-        struct tm *weather_time = localtime(&a_moment_in_time);
-        APP_LOG(APP_LOG_LEVEL_DEBUG, "a_moment_in_time local hour: %i", weather_time->tm_hour);
-        weather_time = gmtime(&a_moment_in_time);
-        APP_LOG(APP_LOG_LEVEL_DEBUG, "a_moment_in_time UTC hour: %i", weather_time->tm_hour);
-
-        int seconds = (int) difftime(a_moment_in_time, now);
-        snprintf(s_data.weather_buffer, BUFFER_SIZE, "%d secs till ", seconds);
-
-        len = strlen(s_data.weather_buffer);
-        snprintf(&s_data.weather_buffer[len], BUFFER_SIZE - len, "%d", weather_time->tm_hour);
+      int minutes = value / 60;
+      if (minutes < 60) {
+        snprintf(s_data.weather_buffer, BUFFER_SIZE, "%c%d min%s", minutes >= 0 ? '+' : '-', minutes, minutes > 1 ? "s" : "");
+      } else {
+        int hours = minutes / 60;
+        snprintf(s_data.weather_buffer, BUFFER_SIZE, "%c%d hr%s", hours >= 0 ? '+' : '-', hours, hours > 1 ? "s" : "");
       }
-      text_layer_set_text(s_data.weather_label, (char*) &s_data.weather_buffer);
 
+      text_layer_set_text(s_data.weather_label, (char*) &s_data.weather_buffer);
       break;
   }
 }
