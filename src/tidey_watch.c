@@ -25,7 +25,8 @@ enum {
 
 void build_weather_label(void) {
   memset(s_data.weather_buffer, 0, BUFFER_SIZE);
-  snprintf(s_data.weather_buffer, BUFFER_SIZE, "%s:%s:%s", s_data.weather_temperature, s_data.weather_timestamp, s_data.weather_description);
+  //snprintf(s_data.weather_buffer, BUFFER_SIZE, "%s:%s:%s", s_data.weather_temperature, s_data.weather_timestamp, s_data.weather_description);
+  strcpy(s_data.weather_buffer, "this is two lines of lots and lots of fun");
   text_layer_set_text(s_data.weather_label, (char*) &s_data.weather_buffer);
 }
 
@@ -52,6 +53,7 @@ void process_tuple(Tuple *t)
       //Temperature received
       memset(s_data.weather_description, 0, BUFFER_SIZE);
       strcpy(s_data.weather_description, string_value);
+      build_weather_label();
       break;
     case KEY_UNIX_TIMESTAMP:
       memset(s_data.weather_timestamp, 0, BUFFER_SIZE);
@@ -97,7 +99,7 @@ static TextLayer* init_text_layer(GRect location, GColor colour, GColor backgrou
 
 static void update_time(struct tm* t) {
   fuzzy_time_to_words(t->tm_hour, t->tm_min, s_data.time_buffer, BUFFER_SIZE);
-  // strcpy(s_data.time_buffer, "just gone quarter to midnight");
+  strcpy(s_data.time_buffer, "just gone quarter to midnight");
   text_layer_set_text(s_data.time_label, s_data.time_buffer);
 }
 
@@ -139,16 +141,16 @@ static void do_init(void) {
   Layer *root_layer = window_get_root_layer(s_data.window);
   GRect frame = layer_get_frame(root_layer);
 
-  int top_y = 20;
-  int bottom_y = 21;
+  int top_y = 36;
+  int bottom_y = 20;
 
-  s_data.weather_label = init_text_layer(GRect(0, 0, frame.size.w, top_y - 1), GColorWhite, GColorBlack, "RESOURCE_ID_GOTHIC_18_BOLD", GTextAlignmentCenter);
+  s_data.weather_label = init_text_layer(GRect(0, -5, frame.size.w, top_y), GColorWhite, GColorBlack, "RESOURCE_ID_GOTHIC_18_BOLD", GTextAlignmentCenter);
   layer_add_child(root_layer, text_layer_get_layer(s_data.weather_label));
 
-  s_data.time_label = init_text_layer(GRect(0, top_y, frame.size.w, frame.size.h - bottom_y - top_y), GColorWhite, GColorBlack, "RESOURCE_ID_BITHAM_30_BLACK", GTextAlignmentLeft);
+  s_data.time_label = init_text_layer(GRect(0, top_y-6, frame.size.w, frame.size.h - bottom_y - top_y + 8), GColorWhite, GColorBlack, "RESOURCE_ID_BITHAM_30_BLACK", GTextAlignmentLeft);
   layer_add_child(root_layer, text_layer_get_layer(s_data.time_label));
 
-  s_data.date_label = init_text_layer(GRect(0, frame.size.h - bottom_y, frame.size.w, bottom_y), GColorWhite, GColorBlack, "RESOURCE_ID_GOTHIC_18_BOLD", GTextAlignmentCenter);
+  s_data.date_label = init_text_layer(GRect(0, frame.size.h - bottom_y + 3, frame.size.w, bottom_y+1), GColorWhite, GColorBlack, "RESOURCE_ID_GOTHIC_18_BOLD", GTextAlignmentCenter);
   layer_add_child(root_layer, text_layer_get_layer(s_data.date_label));
 
   //Register AppMessage events
