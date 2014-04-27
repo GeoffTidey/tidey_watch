@@ -26,11 +26,11 @@ enum {
 
 void build_weather_label(void) {
   memset(s_data.weather_buffer, 0, BUFFER_SIZE);
-  snprintf(s_data.weather_buffer, BUFFER_SIZE, "%s:%s:%s:%s",
-            s_data.weather_temperature,
-            s_data.weather_description,
+  snprintf(s_data.weather_buffer, BUFFER_SIZE, "%s %s %s %s",
             s_data.weather_timestamp,
-            s_data.weather_location
+            s_data.weather_location,
+            s_data.weather_temperature,
+            s_data.weather_description
           );
   //strcpy(s_data.weather_buffer, "this is two lines of lots and lots of fun");
   text_layer_set_text(s_data.weather_label, (char*) &s_data.weather_buffer);
@@ -159,10 +159,10 @@ static void do_init(void) {
   s_data.weather_label = init_text_layer(GRect(0, -5, frame.size.w, top_y), GColorWhite, GColorBlack, "RESOURCE_ID_GOTHIC_18_BOLD", GTextAlignmentCenter);
   layer_add_child(root_layer, text_layer_get_layer(s_data.weather_label));
 
-  s_data.time_label = init_text_layer(GRect(0, top_y-5, frame.size.w, frame.size.h - bottom_y - top_y + 9), GColorWhite, GColorBlack, "RESOURCE_ID_BITHAM_30_BLACK", GTextAlignmentLeft);
+  s_data.time_label = init_text_layer(GRect(0, top_y - 5, frame.size.w, frame.size.h - bottom_y - top_y + 9), GColorWhite, GColorBlack, "RESOURCE_ID_BITHAM_30_BLACK", GTextAlignmentLeft);
   layer_add_child(root_layer, text_layer_get_layer(s_data.time_label));
 
-  s_data.date_label = init_text_layer(GRect(0, frame.size.h - bottom_y + 3, frame.size.w, bottom_y+1), GColorWhite, GColorBlack, "RESOURCE_ID_GOTHIC_18_BOLD", GTextAlignmentCenter);
+  s_data.date_label = init_text_layer(GRect(0, frame.size.h - bottom_y + 2, frame.size.w, bottom_y + 1), GColorWhite, GColorBlack, "RESOURCE_ID_GOTHIC_18_BOLD", GTextAlignmentCenter);
   layer_add_child(root_layer, text_layer_get_layer(s_data.date_label));
 
   //Register AppMessage events
