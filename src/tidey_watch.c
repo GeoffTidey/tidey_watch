@@ -138,6 +138,9 @@ static void handle_minute_tick(struct tm *tick_time, TimeUnits units_changed) {
   update_date(tick_time);
   //Every ten minutes
   if (tick_time->tm_min % 10 == 0) {
+    memset(s_data.weather_timestamp, 0, BUFFER_SIZE);
+    s_data.weather_timestamp[0] = '?';
+    memset(s_data.weather_buffer, 0, BUFFER_SIZE);
     //Send an arbitrary message, the response will be handled by in_received_handler()
     send_int(5, 5);
   }
