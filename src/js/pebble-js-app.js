@@ -33,6 +33,7 @@ var locationOptions = { "timeout": 15000, "maximumAge": 60000 };
 var getWeatherData = function(latitude, longitude) {
 
   //Get weather info
+  // var url = "https://api.forecast.io/forecast/" + api_key + "/" + + latitude + "," + longitude + "?units=uk&exclude=[currently,daily,alerts,flags]"
   var url = "http://api.openweathermap.org/data/2.5/forecast?lat=" + latitude + "&lon=" + longitude + "&cnt=10&mode=json"
   console.log("calling: " + url)
   var response = HTTPGET(url);
