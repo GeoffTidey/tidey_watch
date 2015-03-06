@@ -8,7 +8,9 @@
   "watchapp": {
     "watchface": true
   },
-  "appKeys": {},
+  "appKeys": {
+    "meh": 1
+  },
   "resources": {
     "media": [
         {

@@ -1,5 +1,6 @@
 #include "pebble.h"
 #include "num2words.h"
+#include "secret.h"
 
 #define BUFFER_SIZE 86
 
@@ -12,71 +13,57 @@ static struct CommonWordsData {
   char date_buffer[BUFFER_SIZE];
   char weather_description[BUFFER_SIZE];
   char weather_temperature[BUFFER_SIZE];
-  char weather_location[BUFFER_SIZE];
   char weather_timestamp[BUFFER_SIZE];
   char weather_buffer[BUFFER_SIZE];
 } s_data;
 
+static bool force_update = false;
+
 enum {
   KEY_TEMPERATURE = 0,
-  KEY_LOCATION,
-  KEY_WEATHER_DESCRIPTION,
-  KEY_UNIX_TIMESTAMP,
+  KEY_HOUR_FROM,
+  KEY_HOUR_SUMMARY
 };
 
 void build_weather_label(void) {
   memset(s_data.weather_buffer, 0, BUFFER_SIZE);
-  snprintf(s_data.weather_buffer, BUFFER_SIZE, "%s %s %s %s",
-            s_data.weather_timestamp,
-            s_data.weather_location,
+  snprintf(s_data.weather_buffer, BUFFER_SIZE, "%s %s %s",
             s_data.weather_temperature,
+            s_data.weather_timestamp,
             s_data.weather_description
           );
-  //strcpy(s_data.weather_buffer, "this is two lines of lots and lots of fun");
   text_layer_set_text(s_data.weather_label, (char*) &s_data.weather_buffer);
 }
 
 void process_tuple(Tuple *t)
 {
-  //Get key
+  // Get key
   int key = t->key;
 
-  //Get integer value, if present
+  // Get integer value, if present
   int value = t->value->int32;
 
-  //Get string value, if present
+  // Get string value, if present
   char string_value[BUFFER_SIZE];
   strcpy(string_value, t->value->cstring);
 
-  //Decide what to do
+  // Decide what to do
   switch(key) {
     case KEY_TEMPERATURE:
-      //Temperature received
+      // Temperature received
       memset(s_data.weather_temperature, 0, BUFFER_SIZE);
       snprintf(s_data.weather_temperature, sizeof("XX \u00B0C"), "%d \u00B0C", value);
       break;
-    case KEY_LOCATION:
-      memset(s_data.weather_location, 0, BUFFER_SIZE);
-      strcpy(s_data.weather_location, string_value);
-      build_weather_label();
+    case KEY_HOUR_FROM:
+      memset(s_data.weather_timestamp, 0, BUFFER_SIZE);
+      time_t sec = (time_t) value;
+      struct tm *tm;
+      tm = localtime (&sec);
+      strftime(s_data.weather_timestamp, BUFFER_SIZE, "%H:%M", tm);
       break;
-
-    case KEY_WEATHER_DESCRIPTION:
-      //Temperature received
+    case KEY_HOUR_SUMMARY:
       memset(s_data.weather_description, 0, BUFFER_SIZE);
       strcpy(s_data.weather_description, string_value);
-      build_weather_label();
-      break;
-    case KEY_UNIX_TIMESTAMP:
-      memset(s_data.weather_timestamp, 0, BUFFER_SIZE);
-      int minutes = value / 60;
-      if (minutes < 60) {
-        snprintf(s_data.weather_timestamp, BUFFER_SIZE, "%s%d min%s", minutes >= 0 ? "" : "-", minutes, minutes > 1 ? "s" : "");
-      } else {
-        int hours = minutes / 60;
-        snprintf(s_data.weather_timestamp, BUFFER_SIZE, "%s%d hr%s", hours >= 0 ? "" : "-", hours, hours > 1 ? "s" : "");
-      }
-
       build_weather_label();
       break;
   }
@@ -84,12 +71,12 @@ void process_tuple(Tuple *t)
 
 static void in_received_handler(DictionaryIterator *iter, void *context)
 {
-  //Get data
+  // Get data
   Tuple *t = dict_read_first(iter);
   if (t) {
     process_tuple(t);
   }
-  //Get next
+  // Get next
   while(t != NULL) {
     t = dict_read_next(iter);
     if (t) {
@@ -122,27 +109,30 @@ static void update_date(struct tm* t) {
   text_layer_set_text(s_data.date_label, s_data.date_buffer);
 }
 
-void send_int(uint8_t key, uint8_t cmd)
+void send_to_phone(void)
 {
   DictionaryIterator *iter;
   app_message_outbox_begin(&iter);
 
-  Tuplet value = TupletInteger(key, cmd);
-  dict_write_tuplet(iter, &value);
+  dict_write_cstring(iter, 1, (char *) APP_KEY);
+  dict_write_end(iter);
 
   app_message_outbox_send();
+}
+
+static bool every_ten_minutes(struct tm* t) {
+  return t->tm_min % 10 == 0;
 }
 
 static void handle_minute_tick(struct tm *tick_time, TimeUnits units_changed) {
   update_time(tick_time);
   update_date(tick_time);
-  //Every ten minutes
-  if (tick_time->tm_min % 10 == 0) {
+  // Every ten minutes
+  if (force_update || every_ten_minutes(tick_time)) {
     memset(s_data.weather_timestamp, 0, BUFFER_SIZE);
     s_data.weather_timestamp[0] = '?';
     memset(s_data.weather_buffer, 0, BUFFER_SIZE);
-    //Send an arbitrary message, the response will be handled by in_received_handler()
-    send_int(5, 5);
+    send_to_phone();
   }
 }
 
@@ -170,11 +160,15 @@ static void do_init(void) {
 
   //Register AppMessage events
   app_message_register_inbox_received(in_received_handler);
-  app_message_open(512, 512);   //Large input and output buffer sizes
+  app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
 
   time_t now = time(NULL);
   struct tm *t = localtime(&now);
+  if (!every_ten_minutes(t)) {
+    force_update = true;
+  }
   handle_minute_tick(t, 0);
+  force_update = false;
 
   tick_timer_service_subscribe(MINUTE_UNIT, &handle_minute_tick);
 }
@@ -183,6 +177,7 @@ static void do_deinit(void) {
   window_destroy(s_data.window);
   text_layer_destroy(s_data.date_label);
   text_layer_destroy(s_data.time_label);
+  text_layer_destroy(s_data.weather_label);
 }
 
 int main(void) {

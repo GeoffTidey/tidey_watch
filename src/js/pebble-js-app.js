@@ -6,7 +6,6 @@ function HTTPGET(url) {
 }
 
 //------LOCATION------
-
 var getLocation = function() {
   //Get Location
   window.navigator.geolocation.getCurrentPosition(locationSuccess, locationError, locationOptions);
@@ -27,66 +26,40 @@ function locationError(err) {
 
 var locationOptions = { "timeout": 15000, "maximumAge": 60000 };
 
-
 //------WEATHER------
+var api_key;
 
 var getWeatherData = function(latitude, longitude) {
+  // Get weather info
+  var url = "https://api.forecast.io/forecast/" + api_key + "/" + latitude + "," + longitude + "?units=uk&exclude=[currently,hourly,daily,alerts,flags]"
+  // console.log("calling: " + url)
 
-  //Get weather info
-  // var url = "https://api.forecast.io/forecast/" + api_key + "/" + + latitude + "," + longitude + "?units=uk&exclude=[currently,daily,alerts,flags]"
-  var url = "http://api.openweathermap.org/data/2.5/forecast?lat=" + latitude + "&lon=" + longitude + "&cnt=10&mode=json"
-  console.log("calling: " + url)
   var response = HTTPGET(url);
 
-  //Convert to JSON
+  // Convert to JSON
   var json = JSON.parse(response);
 
-  var epochTimeNow = parseInt((new Date).getTime() / 1000);
-  var offset = 0;
-  console.log("now epoch: " + epochTimeNow)
-  for (var i = 0; i < json.list.length; i++) {
-    console.log(i + " list: " + json.list[i].dt)
-    if (json.list[i].dt >= epochTimeNow) {
-      offset = i;
-      console.log(i + " greater epoch: " + json.list[i].dt)
-      break;
-    }
-  }
+  // Extract the data
+  var apparentTemperature = json.currently.apparentTemperature;
+  var hourFrom            = json.minutely.data[0].time;
+  var hourSummary         = json.minutely.summary;
 
-  //Extract the data
-  var weatherDatetime = parseInt(json.list[offset].dt);
-  var weatherDateDiff = weatherDatetime - epochTimeNow;
-  var temperature     = Math.round(json.list[offset].main.temp - 273.15);
-  var weatherDesc     = json.list[offset].weather[0].description;
-  var location        = json.city.name;
+  // Construct a key-value dictionary
+  var dict = { 0: apparentTemperature, 1: hourFrom, 2: hourSummary };
 
-  //Console output to check all is working.
-  console.log("It is " + temperature + " degrees in " + location + " => " + weatherDateDiff + "seconds. " + weatherDesc);
-
-  //Construct a key-value dictionary
-  var dict = { 0: temperature, 1: location, 2: weatherDesc, 3: weatherDateDiff };
-
-  //Send data to watch for display
+  // Send data to watch for display
   Pebble.sendAppMessage(dict, function(e) {
-    console.log("success");
+    // console.log("success");
     }, function(e) {
-      console.log("fail");
+      // console.log("fail");
   });
 };
 
-
 //------MAIN------
-
-Pebble.addEventListener("ready",
-  function(e) {
-    //App is ready to receive JS messages
-    getLocation();
-  }
-);
-
 Pebble.addEventListener("appmessage",
   function(e) {
-    //Watch wants new data!
+    // Watch wants new data!
+    api_key = e.payload.meh;
     getLocation();
   }
 );
