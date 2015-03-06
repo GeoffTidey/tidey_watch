@@ -114,7 +114,7 @@ void send_to_phone(void)
   DictionaryIterator *iter;
   app_message_outbox_begin(&iter);
 
-  dict_write_cstring(iter, 1, (char *) APP_KEY);
+  dict_write_cstring(iter, 1, (char *) API_KEY);
   dict_write_end(iter);
 
   app_message_outbox_send();
