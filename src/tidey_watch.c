@@ -52,6 +52,7 @@ void process_tuple(Tuple *t)
     case KEY_TEMPERATURE:
       // Temperature received
       memset(s_data.weather_temperature, 0, BUFFER_SIZE);
+
       snprintf(s_data.weather_temperature, sizeof("XX \u00B0C"), "%d \u00B0C", value);
       break;
     case KEY_HOUR_FROM:
@@ -64,7 +65,6 @@ void process_tuple(Tuple *t)
     case KEY_HOUR_SUMMARY:
       memset(s_data.weather_description, 0, BUFFER_SIZE);
       strcpy(s_data.weather_description, string_value);
-      build_weather_label();
       break;
   }
 }
@@ -83,6 +83,7 @@ static void in_received_handler(DictionaryIterator *iter, void *context)
       process_tuple(t);
     }
   }
+  build_weather_label();
 }
 
 static TextLayer* init_text_layer(GRect location, GColor colour, GColor background, const char *res_id, GTextAlignment alignment)
@@ -109,11 +110,12 @@ static void update_date(struct tm* t) {
   text_layer_set_text(s_data.date_label, s_data.date_buffer);
 }
 
-void send_to_phone(void)
+void update_weather_on_phone(void)
 {
   DictionaryIterator *iter;
   app_message_outbox_begin(&iter);
 
+  // change this to hosted solution if making .pbw public.
   dict_write_cstring(iter, 1, (char *) API_KEY);
   dict_write_end(iter);
 
@@ -127,12 +129,8 @@ static bool every_ten_minutes(struct tm* t) {
 static void handle_minute_tick(struct tm *tick_time, TimeUnits units_changed) {
   update_time(tick_time);
   update_date(tick_time);
-  // Every ten minutes
   if (force_update || every_ten_minutes(tick_time)) {
-    memset(s_data.weather_timestamp, 0, BUFFER_SIZE);
-    s_data.weather_timestamp[0] = '?';
-    memset(s_data.weather_buffer, 0, BUFFER_SIZE);
-    send_to_phone();
+    update_weather_on_phone();
   }
 }
 

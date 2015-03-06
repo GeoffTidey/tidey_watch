@@ -31,6 +31,7 @@ var api_key;
 
 var getWeatherData = function(latitude, longitude) {
   // Get weather info
+  // use private server, so not to share secret key, if .pbw is public
   var url = "https://api.forecast.io/forecast/" + api_key + "/" + latitude + "," + longitude + "?units=uk&exclude=[currently,hourly,daily,alerts,flags]"
   // console.log("calling: " + url)
 
