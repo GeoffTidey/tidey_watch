@@ -26,6 +26,18 @@ function locationError(err) {
 
 var locationOptions = { "timeout": 15000, "maximumAge": 60000 };
 
+//------Utility-------
+function evenRound(num, decimalPlaces) {
+    var d = decimalPlaces || 0;
+    var m = Math.pow(10, d);
+    var n = +(d ? num * m : num).toFixed(8); // Avoid rounding errors
+    var i = Math.floor(n), f = n - i;
+    var e = 1e-8; // Allow for rounding errors in f
+    var r = (f > 0.5 - e && f < 0.5 + e) ?
+                ((i % 2 == 0) ? i : i + 1) : Math.round(n);
+    return d ? r / m : r;
+}
+
 //------WEATHER------
 var api_key;
 
@@ -41,7 +53,8 @@ var getWeatherData = function(latitude, longitude) {
   var json = JSON.parse(response);
 
   // Extract the data
-  var apparentTemperature = json.currently.apparentTemperature;
+  var apparentTemperature = evenRound(json.currently.apparentTemperature);
+  // console.log("apparentTemperature: " + apparentTemperature);
   var hourFrom            = json.minutely.data[0].time;
   var hourSummary         = json.minutely.summary;
 

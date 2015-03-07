@@ -35,6 +35,11 @@ void build_weather_label(void) {
   text_layer_set_text(s_data.weather_label, (char*) &s_data.weather_buffer);
 }
 
+size_t printed_length ( int x )
+{
+  return snprintf(NULL, 0, "%d", x);
+}
+
 void process_tuple(Tuple *t)
 {
   // Get key
@@ -50,10 +55,9 @@ void process_tuple(Tuple *t)
   // Decide what to do
   switch(key) {
     case KEY_TEMPERATURE:
-      // Temperature received
       memset(s_data.weather_temperature, 0, BUFFER_SIZE);
 
-      snprintf(s_data.weather_temperature, sizeof("XX \u00B0C"), "%d \u00B0C", value);
+      snprintf(s_data.weather_temperature, printed_length(value) + sizeof(" \u00B0C"), "%d \u00B0C", value);
       break;
     case KEY_HOUR_FROM:
       memset(s_data.weather_timestamp, 0, BUFFER_SIZE);
