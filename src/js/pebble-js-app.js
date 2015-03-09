@@ -54,12 +54,15 @@ var getWeatherData = function(latitude, longitude) {
 
   // Extract the data
   var apparentTemperature = evenRound(json.currently.apparentTemperature);
-  // console.log("apparentTemperature: " + apparentTemperature);
   var hourFrom            = json.minutely.data[0].time;
   var hourSummary         = json.minutely.summary;
 
+  var windSpeed           = evenRound(json.currently.windSpeed).toString();
+  var windBearing         = json.currently.windBearing;
+
   // Construct a key-value dictionary
-  var dict = { 0: apparentTemperature, 1: hourFrom, 2: hourSummary };
+  var dict = { 0: apparentTemperature, 1: hourFrom, 2: hourSummary,
+               3: windSpeed, 4: windBearing };
 
   // Send data to watch for display
   Pebble.sendAppMessage(dict, function(e) {

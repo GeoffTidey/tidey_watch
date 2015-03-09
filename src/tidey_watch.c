@@ -13,6 +13,8 @@ static struct CommonWordsData {
   char date_buffer[BUFFER_SIZE];
   char weather_description[BUFFER_SIZE];
   char weather_temperature[BUFFER_SIZE];
+  char weather_wind_speed[BUFFER_SIZE];
+  int  weather_wind_bearing;
   char weather_timestamp[BUFFER_SIZE];
   char weather_buffer[BUFFER_SIZE];
 } s_data;
@@ -22,15 +24,19 @@ static bool force_update = false;
 enum {
   KEY_TEMPERATURE = 0,
   KEY_HOUR_FROM,
-  KEY_HOUR_SUMMARY
+  KEY_HOUR_SUMMARY,
+  KEY_WIND_SPEED,
+  KEY_WIND_BEARING
 };
 
 void build_weather_label(void) {
   memset(s_data.weather_buffer, 0, BUFFER_SIZE);
-  snprintf(s_data.weather_buffer, BUFFER_SIZE, "%s %s %s",
+  snprintf(s_data.weather_buffer, BUFFER_SIZE, "%s %s %s %s %d",
             s_data.weather_temperature,
             s_data.weather_timestamp,
-            s_data.weather_description
+            s_data.weather_description,
+            s_data.weather_wind_speed,
+            s_data.weather_wind_bearing
           );
   text_layer_set_text(s_data.weather_label, (char*) &s_data.weather_buffer);
 }
@@ -69,6 +75,13 @@ void process_tuple(Tuple *t)
     case KEY_HOUR_SUMMARY:
       memset(s_data.weather_description, 0, BUFFER_SIZE);
       strcpy(s_data.weather_description, string_value);
+      break;
+    case KEY_WIND_SPEED:
+      memset(s_data.weather_wind_speed, 0, BUFFER_SIZE);
+      strcpy(s_data.weather_wind_speed, string_value);
+      break;
+    case KEY_WIND_BEARING:
+      s_data.weather_wind_bearing = value;
       break;
   }
 }
@@ -138,6 +151,24 @@ static void handle_minute_tick(struct tm *tick_time, TimeUnits units_changed) {
   }
 }
 
+static int actual_wind_direction(int bearing, int heading) {
+  return ((((bearing - heading) % 360) + 540) % 360) - 180;
+}
+
+void compass_callback(CompassHeadingData heading) {
+  if (heading.compass_status != CompassStatusDataInvalid) {
+    if (heading.compass_status == CompassStatusCalibrating) {
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "calibrating!!!");
+    }
+
+    // APP_LOG(APP_LOG_LEVEL_DEBUG, "true_heading %d", TRIGANGLE_TO_DEG(heading.true_heading));
+    // int actual_wd = actual_wind_direction(s_data.weather_wind_bearing, TRIGANGLE_TO_DEG(heading.true_heading));
+    // APP_LOG(APP_LOG_LEVEL_DEBUG, "actual_wd %d", actual_wd);
+  } else {
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "compass status is invalid! :(");
+  }
+}
+
 static void do_init(void) {
   s_data.window = window_create();
   const bool animated = true;
@@ -172,10 +203,14 @@ static void do_init(void) {
   handle_minute_tick(t, 0);
   force_update = false;
 
+  compass_service_set_heading_filter(90);
+  compass_service_subscribe(&compass_callback);
   tick_timer_service_subscribe(MINUTE_UNIT, &handle_minute_tick);
 }
 
 static void do_deinit(void) {
+  tick_timer_service_unsubscribe();
+  compass_service_unsubscribe();
   window_destroy(s_data.window);
   text_layer_destroy(s_data.date_label);
   text_layer_destroy(s_data.time_label);
