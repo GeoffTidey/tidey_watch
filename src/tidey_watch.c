@@ -31,7 +31,7 @@ enum {
 
 void build_weather_label(void) {
   memset(s_data.weather_buffer, 0, BUFFER_SIZE);
-  snprintf(s_data.weather_buffer, BUFFER_SIZE, "%s %s %s %s %d",
+  snprintf(s_data.weather_buffer, BUFFER_SIZE, "%s %s %s %s %d°",
             s_data.weather_temperature,
             s_data.weather_timestamp,
             s_data.weather_description,
@@ -203,14 +203,14 @@ static void do_init(void) {
   handle_minute_tick(t, 0);
   force_update = false;
 
-  compass_service_set_heading_filter(90);
-  compass_service_subscribe(&compass_callback);
+  // compass_service_set_heading_filter(90);
+  // compass_service_subscribe(&compass_callback);
   tick_timer_service_subscribe(MINUTE_UNIT, &handle_minute_tick);
 }
 
 static void do_deinit(void) {
   tick_timer_service_unsubscribe();
-  compass_service_unsubscribe();
+  // compass_service_unsubscribe();
   window_destroy(s_data.window);
   text_layer_destroy(s_data.date_label);
   text_layer_destroy(s_data.time_label);
