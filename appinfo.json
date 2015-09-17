@@ -3,6 +3,7 @@
   "shortName": "Tidey Watch",
   "longName": "Tidey Watch",
   "companyName": "Geoff Tidey",
+  "sdkVersion": "3",
   "versionCode": 2,
   "versionLabel": "2.0",
   "watchapp": {
